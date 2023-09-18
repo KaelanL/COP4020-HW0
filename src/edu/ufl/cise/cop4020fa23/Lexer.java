@@ -484,9 +484,23 @@ public class Lexer implements ILexer {
 			}
 			else
 			{
-				if(true) // \n
+				if((input.charAt(pos) == ' ') || (input.charAt(pos) == '\n') || (input.charAt(pos) == '\r') || (input.charAt(pos) == '\t') || (input.charAt(pos) == '#'))
 				{
+					if(input.charAt(pos) == '\n')
+					{
+						line++;
+						col = 1;
+						pos++;
+					}
+					else if((input.charAt(pos) == ' ') || (input.charAt(pos) == '\r') || (input.charAt(pos) == '\t'))
+					{
+						col++;
+						pos++;
+					}
+					else //handle comment
+					{
 
+					}
 				}
 				else
 				{
