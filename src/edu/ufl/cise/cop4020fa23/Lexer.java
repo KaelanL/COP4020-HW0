@@ -20,13 +20,14 @@ import java.util.List;
 public class Lexer implements ILexer {
 
 	String input;
+	List <Token> tokens;
 
 	public Lexer(String input) {
 		this.input = input;
+		tokens = lexInput();
 	}
 
-	public List<Token> lexinput()
-	{
+	public List<Token> lexInput(){
 		//create token list
 		List<Token> tokens = new ArrayList<>();
 		int pos = 0;
@@ -409,14 +410,81 @@ public class Lexer implements ILexer {
 					pos++;
 					tokens.add(temp);
 				}
-				else
+				else if(input.charAt(startPos) == '0')
 				{
-
+					Token temp = new Token(Kind.NUM_LIT, startPos, 1, input.substring(startPos, startPos+1).toCharArray(), new SourceLocation(line, col));
+					col++;
+					pos++;
+					tokens.add(temp);
+				}
+				else if((input.charAt(startPos) >= 'a' && input.charAt(startPos) <= 'z') || (input.charAt(startPos) >= 'A' && input.charAt(startPos) <= 'Z') || (input.charAt(startPos) == '_'))
+				{
+					String tempToken = String.valueOf(input.charAt(startPos));
+					int startCol = col;
+					col++;
+					pos++;
+					while(pos < input.length() && ((input.charAt(pos) >= '0' && input.charAt(pos) <= '9') || (input.charAt(pos) >= 'a' && input.charAt(pos) <= 'z') || (input.charAt(pos) >= 'A' && input.charAt(pos) <= 'Z') || (input.charAt(pos) == '_')))
+					{
+						tempToken += String.valueOf(input.charAt(pos));
+						col++;
+						pos++;
+					}
+					Token temp = new Token(Kind.IDENT, startPos, tempToken.length(), tempToken.toCharArray(), new SourceLocation(line, startCol));
+					col++;
+					pos++;
+				}
+				else if(input.charAt(startPos) >= '1' && input.charAt(startPos) <= '9')
+				{
+					String tempToken = String.valueOf(input.charAt(startPos));
+					int startCol = col;
+					col++;
+					pos++;
+					while(pos < input.length() && (input.charAt(pos) >= '0' && input.charAt(pos) <= '9'))
+					{
+						tempToken += String.valueOf(input.charAt(pos));
+						col++;
+						pos++;
+					}
+					Token temp = new Token(Kind.NUM_LIT, startPos, tempToken.length(), tempToken.toCharArray(), new SourceLocation(line, startCol));
+					col++;
+					pos++;
+				}
+				else if(input.charAt(startPos) == '\"')
+				{
+					String tempToken = String.valueOf(input.charAt(startPos));
+					int startCol = col;
+					col++;
+					pos++;
+					while(pos < input.length() && (input.charAt(pos) >= 32 && input.charAt(pos) <= 126))
+					{
+						if(input.charAt(pos) == '\"')
+						{
+							tempToken += String.valueOf(input.charAt(pos));
+							col++;
+							pos++;
+							break;
+						}
+						else
+						{
+							tempToken += String.valueOf(input.charAt(pos));
+							col++;
+							pos++;
+						}
+					}
+					Token temp = new Token(Kind.STRING_LIT, startPos, tempToken.length(), tempToken.toCharArray(), new SourceLocation(line, startCol));
+					col++;
+					pos++;
+				}
+				else //error
+				{
+					tokens.add(new Token(Kind.ERROR, pos, 1, input.substring(pos, pos+1).toCharArray(), new SourceLocation(line, col)));
+					col++;
+					//throw new LexicalException();
 				}
 			}
 			else
 			{
-				if(true)
+				if(true) // \n
 				{
 
 				}
@@ -424,6 +492,7 @@ public class Lexer implements ILexer {
 				{
 					tokens.add(new Token(Kind.ERROR, pos, 1, input.substring(pos, pos+1).toCharArray(), new SourceLocation(line, col)));
 					col++;
+					//throw new LexicalException();
 				}
 				pos++;
 			}
